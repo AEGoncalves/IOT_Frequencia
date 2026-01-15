@@ -1,0 +1,18 @@
+import logging
+import json
+import os
+from azure.iot.hub import IoTHubRegistryManager
+from azure.iot.hub.models import CloudToDeviceMethod
+ 
+def main(event):
+    body = json.loads(event.get_body().decode('utf-8'))
+    temp = body["temp"]
+    device_id = event.iothub_metadata["connection-device-id"]
+    if temp > 22:
+        method = CloudToDeviceMethod(method_name="tempSup", payload={})
+    else:
+        method = CloudToDeviceMethod(method_name="tempInf", payload={})
+ 
+    conn = os.environ["REGISTRY_MANAGER_CONNECTION_STRING"]
+    manager = IoTHubRegistryManager(conn)
+    manager.invoke_device_method(device_id, method)

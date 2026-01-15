@@ -1,0 +1,75 @@
+import network
+import time
+import json
+import random
+import dht
+ 
+print("Connecting to WiFi", end="")
+sta_if = network.WLAN(network.STA_IF)
+sta_if.active(True)
+sta_if.connect('Wokwi-GUEST', '')
+while not sta_if.isconnected():
+  print(".", end="")
+  time.sleep(0.1)
+print(" Connected!")
+# --- Azure IoT Hub client ---
+try:
+    import ioth
+except:
+    import mip
+    mip.install("github:jcaldeira-iot/iot-hub-micropython-client/package.json")
+    import ioth
+ 
+from ioth import IoTHClient, IoTHEvents
+ 
+iot_hub   = "hname20231145.azure-devices.net"
+device_id = "did20231145"
+sas_token = "SharedAccessSignature sr=hname20231145.azure-devices.net%2Fdevices%2Fdid20231145&sig=G7lolgwm6sxdP0AQRWFnQL%2FoxHgy1ZGNu3rf50%2B6QQ8%3D&se=1768527559"
+ 
+device_client = IoTHClient(iot_hub, device_id, sas_token)
+ 
+print("Connecting to IoT Hub...")
+device_client.connect()
+print("Connected!")
+ 
+ 
+from machine import Pin
+# --- LEDs ---
+led_verde = Pin(15, Pin.OUT)
+led_amarelo = Pin(16, Pin.OUT)
+ 
+led_verde.off()
+led_amarelo.off()
+ 
+# --- Direct Method handler ---
+def handle_method_request(request, ack):
+    print("Direct method recebido:", request.name)
+ 
+    if request.name == "tempSup":
+        led_amarelo.on()
+        led_verde.off()
+ 
+    elif request.name == "tempInf":
+        led_verde.on()
+        led_amarelo.off()
+ 
+    ack(request, "200")
+ 
+device_client.on(IoTHEvents.COMMANDS, handle_method_request)
+ 
+sensor = dht.DHT11(7)
+ 
+# --- Telemetria (temperatura simulada) ---
+while True:
+    #temp = round(random.uniform(18, 26), 1)
+    sensor.measure()
+    temp = sensor.temperature()
+    telemetry = json.dumps({
+        "temp": temp
+    })
+ 
+    print("Sending telemetry:", telemetry)
+    device_client.send_telemetry(telemetry)  
+ 
+    device_client.listen()
+    time.sleep(1)
