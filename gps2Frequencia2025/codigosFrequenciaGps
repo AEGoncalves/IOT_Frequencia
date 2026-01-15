@@ -1,0 +1,106 @@
+az login
+
+az group create --name group20171165 --location uksouth
+
+az iot hub create --resource-group group20171165 --sku F1 --partition-count 2 --name hub20171165
+
+az iot hub device-identity create --device-id device20171165 \
+                                  --hub-name hub20171165
+                                  
+az iot hub generate-sas-token --device-id device20171165 \
+                              --hub-name hub20171165 \
+                              --duration 12000     
+                              
+####Output
+  "sas": "SharedAccessSignature sr=hub20171165.azure-devices.net%2Fdevices%2Fdevice20171165&sig=CCHuLdZd3%2FGs4XX7VDtpWohzNrW5ozj%2B26itbI7ORtc%3D&se=1768427006"
+  
+mkdir azurite
+  
+cd azurite
+  
+azurite --location azurite  
+
+mkdir gps-sensor-trigger
+
+cd gps-sensor-trigger
+
+####subtituir linha local.settings.json
+"AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+pip3 install -r requirements.txt
+
+az iot hub connection-string show --default-eventhub \
+                                  --output table \
+                                  --hub-name hub20171165                                                           
+                                  
+###Output
+ConnectionString
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Endpoint=sb://ihsuprodlnres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=/5Cl7PzPm+zCwwN2GJh2CA92UN+6PNB0mAIoTI/r1oI=;EntityPath=iothub-ehub-hub2017116-58536134-86cc2ea02f
+
+func new --name iot-hub-trigger --template "Azure Event Hub trigger"
+
+####alterar __init__ e outros ficheiros 
+
+pip3 install -r requirements.txt
+
+ az storage account create --resource-group group20171165 \
+                          --sku Standard_LRS \
+                          --name storage20171165
+                          
+az functionapp create --resource-group group20171165 \
+                      --runtime python \
+                      --functions-version 3 \
+                      --os-type Linux \
+                      --consumption-plan-location uksouth \
+                      --storage-account storage20171165 \
+                      --name func20171165                                                                                         
+
+az iot hub connection-string show --policy-name service \
+                                  --output table \
+                                  --hub-name hub20171165                                  
+##OutPut                                  
+ConnectionString
+-------------------------------------------------------------------------------------------------------------------------------
+HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE=
+
+ConnectionString
+-------------------------------------------------------------------------------------------------------------------------------
+HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE=
+
+###colocar no local.settings.json
+"REGISTRY_MANAGER_CONNECTION_STRING": "HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE="
+
+
+az functionapp config appsettings set --resource-group group20171165 \
+                                      --name func20171165 \
+                                      --settings "IOT_HUB_CONNECTION_STRING=HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE="  
+                                      
+az iot hub connection-string show --policy-name service \
+                                  --output table \
+                                  --hub-name hub20171165
+                                  
+
+
+ConnectionString
+-------------------------------------------------------------------------------------------------------------------------------
+HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE=
+
+###colocar no local.settings.json
+"REGISTRY_MANAGER_CONNECTION_STRING": "HostName=hub20171165.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=7+K5Jf6S99Xgzyfy6/mF7UuQWbPuOSenCAIoTAZaQYE="                                      
+                                      
+func azure functionapp publish func20171165
+
+func start
+  
+
+
+
+
+
+
+
+                                                                   
+                                  
+                                  
+                                  

@@ -1,0 +1,85 @@
+import network, time, json
+from machine import Pin
+
+# --- WiFi ---
+print("Connecting to WiFi", end="")
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect("Wokwi-GUEST", "")
+while not wlan.isconnected():
+    print(".", end="")
+    time.sleep(0.2)
+print(" Connected!")
+
+# --- IoT Hub client (ioth) ---
+try:
+    import ioth
+except:
+    import mip
+    mip.install("github:jcaldeira-iot/iot-hub-micropython-client/package.json")
+    import ioth
+
+from ioth import IoTHClient, IoTHEvents
+
+iot_hub   = "hub20171165.azure-devices.net"
+device_id = "device20171165"
+sas_token = "SharedAccessSignature sr=hub20171165.azure-devices.net%2Fdevices%2Fdevice20171165&sig=CCHuLdZd3%2FGs4XX7VDtpWohzNrW5ozj%2B26itbI7ORtc%3D&se=1768427006"
+
+device_client = IoTHClient(iot_hub, device_id, sas_token)
+
+print("Connecting to IoT Hub...")
+device_client.connect()
+print("Connected!")
+
+# --- LEDs ---
+led_verde = Pin(15, Pin.OUT)
+led_vermelho = Pin(16, Pin.OUT)
+
+# --- Direct methods handler ---
+def handle_method_request(request, ack):
+    print("Direct method recebido:", request.name)
+
+    if request.name == "led_verde_on":
+        led_verde.on()
+        led_vermelho.off()
+
+    elif request.name == "led_verde_off":
+        led_verde.off()
+
+    elif request.name == "led_vermelho_on":
+        led_vermelho.on()
+        led_verde.off()
+
+    elif request.name == "led_vermelho_off":
+        led_vermelho.off()
+
+    ack(request, "200")
+
+
+device_client.on(IoTHEvents.COMMANDS, handle_method_request)
+
+# --- Telemetria (lê gpsTrack.txt e envia longitude) ---
+gpsDataFile = open("gpsTrack.txt", "r")
+
+def send_gps_line(line):
+    line = line.strip()
+    if 'trkpt lat=' in line:
+        parts = line.split('"')
+        lat = float(parts[1])
+        lon = float(parts[3])
+
+        telemetry = json.dumps({"long": lon})   # <- simples: número
+        print("Sending telemetry:", telemetry)
+        device_client.send_telemetry(telemetry)
+
+while True:
+    line = gpsDataFile.readline()
+    if line:
+        send_gps_line(line)
+    else:
+        gpsDataFile.close()
+        gpsDataFile = open("gpsTrack.txt", "r")
+
+    # ouve direct methods
+    device_client.listen()
+    time.sleep(1)
