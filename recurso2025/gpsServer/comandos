@@ -1,0 +1,10 @@
+mkdir gpsServer
+
+cd gpsServer
+
+pip3 intall paho-mqtt==1.6.1
+
+touch app.py
+
+python3 app.py
+

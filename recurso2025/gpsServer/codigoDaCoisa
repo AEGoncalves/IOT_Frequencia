@@ -1,0 +1,33 @@
+def handle_command(topic, message):
+    payload = json.loads(message.decode())
+    print("Comando recebido:", payload)
+
+    if payload['led_on']:
+        led.on()
+    else:
+        led.off()
+
+mqtt_client.set_callback(handle_command)
+mqtt_client.subscribe(server_command_topic)
+
+
+
+gpsDataFile = open('gpsTrack.txt', 'r')
+
+def print_gps_data(data):
+    data = data.strip()
+    if 'trkpt lat=' in data:
+        parts = data.split('"')
+        lat = float(parts[1])
+        lon = float(parts[3])
+        
+        telemetry = json.dumps({'longitude': lat})
+        print("A enviar:", telemetry)
+        mqtt_client.publish(client_telemetry_topic, telemetry)
+        mqtt_client.check_msg()
+
+while True:
+    data = gpsDataFile.readline()
+    print("Li a linha")
+    print_gps_data(data)
+    time.sleep(5)
