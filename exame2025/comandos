@@ -1,0 +1,196 @@
+az login
+
+az account list --output table
+
+az account set --subscription ab4fecc3-17f1-4812-998a-bbd3d8304ed6
+
+az group create --name 20171165groupexame \
+                --location uksouth
+                
+az iot hub create --resource-group 20171165groupexame \
+                  --sku F1 \
+                  --partition-count 2 \
+                  --name 20171165hubexame
+                  
+az iot hub device-identity create --device-id 20171165deviceexame \
+                                  --hub-name 20171165hubexame   
+                                  
+az iot hub generate-sas-token --device-id 20171165deviceexame \
+                              --hub-name 20171165hubexame \
+                              --duration 12000     
+                              
+"sas": "SharedAccessSignature sr=20171165hubexame.azure-devices.net%2Fdevices%2F20171165deviceexame&sig=FPdKpcV119510eKu%2BGoXgEtEebVAKTEOuKCcHLz%2B5wk%3D&se=1768439351"
+
+mkdir azurite
+
+cd azurite
+
+azurite --location azurite
+                              
+mkdir 20171165trigger-exame
+
+cd 20171165trigger-exame  
+
+func init --worker-runtime python 20171165trigger-exame  
+
+####subtituir linha local.settings.json
+"AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+pip3 install -r requirements.txt
+
+az iot hub connection-string show --default-eventhub \
+                                  --output table \
+                                  --hub-name 20171165hubexame
+                                  
+ConnectionString
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Endpoint=sb://ihsuprodlnres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=ESJX8oz4I/Euwha2FO17lhsk2sx3Kezr0AIoTHWhwbM=;EntityPath=iothub-ehub-20171165hu-58537694-a54e0554c6
+
+####adicionar linha local.settings.json #####substituir connection pelo endpoint
+"IOT_HUB_CONNECTION_STRING": "Endpoint=sb://ihsuprodlnres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=ESJX8oz4I/Euwha2FO17lhsk2sx3Kezr0AIoTHWhwbM=;EntityPath=iothub-ehub-20171165hu-58537694-a54e0554c6"
+                                  
+#####comando
+func new --name iot-hub-trigger --template "Azure Event Hub trigger"
+
+######Replace the contents of function.json by the following code:                
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "name": "event",
+      "direction": "in",
+      "eventHubName": "samples-workitems",
+      "connection": "IOT_HUB_CONNECTION_STRING",
+      "cardinality": "one",
+      "consumerGroup": "$Default"
+    }
+  ]
+}
+######Replace the contents of host.json by the following code:
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[2.*, 3.0.0)"
+  }
+}
+
+######Replace the contents of local.settings.json by the following code: ####subtituir a connection string
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "IOT_HUB_CONNECTION_STRING": "Endpoint=sb://ihsuprodlnres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=ESJX8oz4I/Euwha2FO17lhsk2sx3Kezr0AIoTHWhwbM=;EntityPath=iothub-ehub-20171165hu-58537694-a54e0554c6"
+  }
+}
+
+az iot hub connection-string show --policy-name service \
+                                  --output table \
+                                  --hub-name 20171165hubexame
+ConnectionString
+------------------------------------------------------------------------------------------------------------------------------------
+HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk=
+
+####In VS Code, open the local.settings.json file. Add the following additional value inside the Values section:
+"REGISTRY_MANAGER_CONNECTION_STRING": "HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk="
+
+az storage account create --resource-group 20171165groupexame \
+                          --sku Standard_LRS \
+                          --allow-blob-public-access $true \
+                          --name 20171165smsexame 
+
+az storage account show-connection-string --output table \
+                                          --name 20171165smsexame
+
+ConnectionString
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=20171165smsexame;AccountKey=mXK/yrGabG2G3/SRT1BANV78AXl6XQKiZJ3lNTG+wYyPqX1tGuhhb/UETPT6FAqudUJVMjWr+585+AStWI2DBw==;BlobEndpoint=https://20171165smsexame.blob.core.windows.net/;FileEndpoint=https://20171165smsexame.file.core.windows.net/;QueueEndpoint=https://20171165smsexame.queue.core.windows.net/;TableEndpoint=https://20171165smsexame.table.core.windows.net/
+
+####Add a new entry to the local.settings.json file for your storage account connection string, using the value from the previous step.
+ "STORAGE_CONNECTION_STRING" : "" 
+
+pip3 install -r requirements.txt
+
+######In the __init__.py file for the iot-hub-trigger, replace all the content with the following code snippets:
+https://github.com/jcaldeira-iot/IoT-For-Beginners-Micropython/tree/main/3-transport/lessons/11-store-location-data/code/functions/gps-trigger
+
+#####Update the value of "name" and '"cardinality"' in the function.json file:
+"name": "events",
+"cardinality": "many"
+         
+######Update the "version" value of "extensionBundle" in the host.json file:
+"version": "[2.*, 3.0.0)"          
+         
+ az storage account keys list --output table \
+                             --account-name 20171165smsexame
+                             
+CreationTime                      KeyName    Permissions    Value
+--------------------------------  ---------  -------------  ----------------------------------------------------------------------------------------
+2026-01-14T22:07:02.729600+00:00  key1       FULL           mXK/yrGabG2G3/SRT1BANV78AXl6XQKiZJ3lNTG+wYyPqX1tGuhhb/UETPT6FAqudUJVMjWr+585+AStWI2DBw==
+2026-01-14T22:07:02.729600+00:00  key2       FULL           kWX94HZRihgPy7/bQ42riXXrbKeVd+QdOO57QvbI8jFt0c5ouFwEK6rec2G/6BBkpo6ebbJdt4YL+AStNOBhhw==
+
+####Colocar __init__ atualizado com o nome do container e recepçao de dados
+##Exemplo:
+blob_body = {
+            'device_id' : device_id,
+            'timestamp' : event.iothub_metadata['time'],
+            'dados': {
+        'light': valorlight,
+        'temp': valortemp }
+        }
+        
+
+az storage blob list --container-name lighttemp-data \
+                     --output table \
+                     --account-name 20171165smsexame \
+                     --account-key mXK/yrGabG2G3/SRT1BANV78AXl6XQKiZJ3lNTG+wYyPqX1tGuhhb/UETPT6FAqudUJVMjWr+585+AStWI2DBw==                             
+                             
+az storage account create --resource-group 20171165groupexame \
+                          --sku Standard_LRS \
+                          --name 20171165smsexame                              
+                             
+#####Run the following command to create a Function App:
+ az functionapp create --resource-group 20171165groupexame \
+                      --runtime python \
+                      --functions-version 3 \
+                      --os-type Linux \
+                      --consumption-plan-location uksouth \
+                      --storage-account 20171165smsexame \
+                      --name 20171165funcexame        
+                      
+                                            
+az iot hub connection-string show --policy-name service \
+                                  --output table \
+                                  --hub-name 20171165hubexame                             
+
+ConnectionString
+------------------------------------------------------------------------------------------------------------------------------------
+HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk=
+
+####In VS Code, open the local.settings.json file. Add the following additional value inside the Values section:
+"REGISTRY_MANAGER_CONNECTION_STRING": "HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk="   
+
+####The SDK for the Registry Manager is available via a Pip package. Add the following line to the requirements.txt file to add the dependency on this package:
+
+azure-iot-hub
+
+####Run the following command to install the new Pip packages:
+pip3 install -r requirements.txt   
+
+####Run the following command to set the IOT_HUB_CONNECTION_STRING setting in the Functions App Application Settings:
+az functionapp config appsettings set --resource-group 20171165groupexame \
+                                      --name 20171165funcexame \
+                                      --settings "IOT_HUB_CONNECTION_STRING=HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk=" 
+
+Run the following command from the VS Code terminal to publish your Functions App:
+func azure functionapp publish 20171165funcexame                                                                                                                   

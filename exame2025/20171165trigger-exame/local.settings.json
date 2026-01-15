@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "IOT_HUB_CONNECTION_STRING": "Endpoint=sb://ihsuprodlnres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=ESJX8oz4I/Euwha2FO17lhsk2sx3Kezr0AIoTHWhwbM=;EntityPath=iothub-ehub-20171165hu-58537694-a54e0554c6",
+    "REGISTRY_MANAGER_CONNECTION_STRING": "HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk=",
+    "STORAGE_CONNECTION_STRING": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=20171165smsexame;AccountKey=mXK/yrGabG2G3/SRT1BANV78AXl6XQKiZJ3lNTG+wYyPqX1tGuhhb/UETPT6FAqudUJVMjWr+585+AStWI2DBw==;BlobEndpoint=https://20171165smsexame.blob.core.windows.net/;FileEndpoint=https://20171165smsexame.file.core.windows.net/;QueueEndpoint=https://20171165smsexame.queue.core.windows.net/;TableEndpoint=https://20171165smsexame.table.core.windows.net/",
+    "REGISTRY_MANAGER_CONNECTION_STRING": "HostName=20171165hubexame.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=9Q7aOHtJ+uOHj71DQnciHc/ROgsuaXMzCAIoTGNEHjk="
+  }
+}

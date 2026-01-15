@@ -1,0 +1,54 @@
+######Codiga da coisa ler sensor humidade#######
+
+import network
+import time
+import json
+
+print("Connecting to WiFi", end="")
+sta_if = network.WLAN(network.STA_IF)
+sta_if.active(True)
+sta_if.connect('Wokwi-GUEST', '')
+while not sta_if.isconnected():
+  print(".", end="")
+  time.sleep(0.1)
+print(" Connected!")
+
+try:
+    import ioth
+except:
+    import mip
+    mip.install('github:jcaldeira-iot/iot-hub-micropython-client/package.json')
+    import ioth
+from ioth import IoTHClient
+
+iot_hub = '20171165hubexame.azure-devices.net'
+device_id = '20171165deviceexame'
+sas_token = 'SharedAccessSignature sr=20171165hubexame.azure-devices.net%2Fdevices%2F20171165deviceexame&sig=FPdKpcV119510eKu%2BGoXgEtEebVAKTEOuKCcHLz%2B5wk%3D&se=1768439351'
+
+device_client = IoTHClient(iot_hub, device_id, sas_token)
+
+print('Connecting')
+device_client.connect()
+print('Connected')
+
+
+from machine import ADC, Pin
+
+#luz = ADC(7, atten=ADC.ATTN_11DB)
+#sensor = dht.DHT11(6)
+#relay = Pin(15, Pin.OUT)
+valorlight = 0
+valortemp = 0
+while True:
+  #liht = luz.read()
+  #sensor.measure()
+  #temp = sensor.temperature()
+  valorlight = valorlight + 1
+  valortemp = valortemp + 2
+  telemetry = json.dumps({
+        "light": valorlight,
+        "temp": valortemp
+    })
+  print("Sending telemetry ", telemetry)
+  device_client.send_telemetry(telemetry)
+  time.sleep(2)
